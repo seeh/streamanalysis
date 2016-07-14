@@ -11,8 +11,8 @@ from streamanalysis.utils import get_norm
 
 from collections import namedtuple as nt
 
-ResultSpec = nt('result', ['pos', 'pos_err', 'vel', 'vel_err', 'dist',
-                           'stationary', 'time'])
+ResultSpec = nt('result', ['pos', 'pos_err', 'vel', 'vel_err', 'tot_vel',
+                           'dist', 'stationary', 'time'])
 FilterSpec = nt('filter', ['X', 'P'])
 
 POS_IDX = [0, 2]
@@ -96,6 +96,7 @@ class Analyser(Thread):
                                 pos_err = err[POS_IDX],
                                 vel = self.vel0,
                                 vel_err = err[VEL_IDX],
+                                tot_vel = 0.0,
                                 dist = 0.0,
                                 stationary = True,
                                 time = None)
@@ -184,16 +185,19 @@ class Analyser(Thread):
         # Test if object is stationary (needed to minimize bias in distance
         # estimation for stationary objects)
         stat = self.is_stationary(vel, vel_err)
-        # If object is not stationary, increment total distance
+        # If object is not stationary, increment total distance and calculate
+        # total velocity
         if not stat:
             dist = sensor.dist + get_norm(pos-sensor.pos)
+            tot_vel = get_norm(vel)
         else:
             dist = sensor.dist
+            tot_vel = 0.0
         # Return result
         result = ResultSpec(pos = pos, pos_err = pos_err,
                             vel = vel, vel_err = vel_err,
-                            dist = dist, stationary = stat,
-                            time = time)
+                            tot_vel = tot_vel, dist = dist,
+                            stationary = stat, time = time)
         return result
     
     def is_stationary(self, vel, vel_err):
