@@ -47,10 +47,9 @@ class Athlete(object):
         self.vmax = vmax
         self.acc_freq = acc_freq
         self.dec_a = dec_a
-        self.reset()
         self.rs = RandomState(seed)
         self.keepdata = keepdata
-        self.data = []
+        self.reset()
             
     def __call__(self, time):
         """
